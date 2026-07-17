@@ -15,10 +15,16 @@ from supabase import create_client, Client
 
 
 load_dotenv()
-supabase: Client = create_client(
-    supabase_url=os.getenv("SUPABASE_URL"),
-    supabase_key=os.getenv("SUPABASE_PUBLISHABLE_KEY")
-)
+
+def _build_supabase_client() -> Client:
+    url = os.getenv("SUPABASE_URL")
+    key = os.getenv("SUPABASE_PUBLISHABLE_KEY")
+    if not url or not key:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Faltan variables de entorno de Supabase (SUPABASE_URL / SUPABASE_PUBLISHABLE_KEY)."
+        )
+    return create_client(url, key)
 
 security = HTTPBearer()
 
@@ -92,6 +98,7 @@ def create_item(
 
 @app.post("/tasks/")
 def create_task(task: Task):
+  supabase = _build_supabase_client()
   data = supabase.table("task").insert({
       "title": task.title,
       "description": task.description

@@ -1,1 +1,4 @@
 fastapi==0.138.2
+supabase
+python-dotenv
+requests
